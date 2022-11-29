@@ -2,9 +2,9 @@
 Functions of estimation notebooks.
 """
 from scipy.stats import pearsonr
-from sklearn.linear_model import Ridge
 from sklearn.model_selection import KFold
 from sklearn.preprocessing import StandardScaler
+
 
 import ast
 import matplotlib.pyplot as plt
@@ -54,16 +54,16 @@ def get_data(lsms_path: str, cnn_path: str, osm_path: str):
 
     return complete, all_cols
 
-
-def run_ridge(X: np.array, y: np.array, alpha: int = 1000, seed=42):
+def run_model(X: np.array, y: np.array, model_, seed=42, **params):
     """
     Run Ridge Regression
 
     Args:
     - X (np.array): Features
     - y (np.array): Consumption
-    - alpha (int): param for Ridge Regression
+    - model (func): Model to tune the parameters
     - seed (int): For reproducibility
+    - **params : hyperparameters to give in the model
 
     Return:
     - r^2
@@ -76,7 +76,7 @@ def run_ridge(X: np.array, y: np.array, alpha: int = 1000, seed=42):
     for train_ind, test_ind in kf.split(X, y):
         x_train_fold, x_test_fold = X[train_ind], X[test_ind]
         y_train_fold, y_test_fold = y[train_ind], y[test_ind]
-        model = Ridge(alpha)
+        model = model_(**params)
         model.fit(x_train_fold, y_train_fold)
         y_predict = model.predict(x_test_fold)
         r2.append(pearsonr(y_test_fold, y_predict)[0]**2)
@@ -84,8 +84,7 @@ def run_ridge(X: np.array, y: np.array, alpha: int = 1000, seed=42):
     y_hest = model.predict(X)
     return np.mean(r2), y_hest, model
 
-
-def run_ridge_out(X: np.array, y: np.array, X_out: np.array, y_out: np.array, alpha: int = 1000):
+def run_model_out(X: np.array, y: np.array, X_out: np.array, y_out: np.array, alpha: int = 1000):
     """
     Run Ridge Regression with training on X and predictions on X_out
 
