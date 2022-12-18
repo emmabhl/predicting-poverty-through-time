@@ -72,16 +72,19 @@ def run_model(X: np.array, y: np.array, model_, seed=42, **params):
 
     kf = KFold(n_splits=10, shuffle=True, random_state=seed)
     r2 = []
+    y_real = []
+    y_predicted = []
     for train_ind, test_ind in kf.split(X, y):
         x_train_fold, x_test_fold = X[train_ind], X[test_ind]
         y_train_fold, y_test_fold = y[train_ind], y[test_ind]
         model = model_(**params)
         model.fit(x_train_fold, y_train_fold)
-        y_predict = model.predict(x_test_fold)
-        r2.append(pearsonr(y_test_fold, y_predict)[0]**2)
+        test_predict = model.predict(x_test_fold)
+        r2.append(pearsonr(y_test_fold, test_predict)[0]**2)        
+        y_predicted.extend(test_predict)
+        y_real.extend(y_test_fold)
 
-    y_hest = model.predict(X)
-    return np.mean(r2), y_hest, model
+    return np.mean(r2), y_real, y_predicted, model
 
 def run_model_out(X: np.array, y: np.array, X_out: np.array, y_out: np.array, alpha: int = 1000):
     """
